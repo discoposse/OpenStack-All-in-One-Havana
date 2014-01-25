@@ -1,4 +1,10 @@
-sudo sed -i "s/ubuntu/aio-havana/g" /etc/hosts
+rm /etc/hostname
+echo "aio-openstack" tee /etc/hostname
+
+rm /etc/hosts
+echo "127.0.0.1 localhost
+${INTERNAL_IP} aio-havana
+" tee /etc/hosts
 
 rm /etc/network/interfaces
 echo "
@@ -18,6 +24,6 @@ auto eth1
 iface eth1 inet manual
 	up ifconfig $IFACE 0.0.0.0 up
 	up ifconfig $IFACE promisc
-" > /etc/network/interfaces
+" tee /etc/network/interfaces
 
-reboot
+shutdown -h now

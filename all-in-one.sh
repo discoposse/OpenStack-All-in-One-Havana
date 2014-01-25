@@ -20,12 +20,6 @@ sudo echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/
 sudo apt-get install python-software-properties -y
 sudo apt-get update && apt-get upgrade -y
 
-rm /etc/hosts
-
-echo "127.0.0.1 localhost
-${INTERNAL_IP} aio-havana
-" > /etc/hosts
-
 # Install NTP while we are here
 echo "ntpdate controller
 hwclock -w" | sudo tee /etc/cron.daily/ntpdate
