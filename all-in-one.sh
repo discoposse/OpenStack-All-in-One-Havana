@@ -1,8 +1,5 @@
 #################### Mastering OpenStack Controller Install ####################
 
-export PUBLIC_IP=192.168.79.50
-export INTERNAL_IP=10.10.100.50
-
 # MySQL install preparation
 export DEBIAN_FRONTEND=noninteractive
 export MYSQL_ROOT_PASS=openstack

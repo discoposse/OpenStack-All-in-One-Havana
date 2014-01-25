@@ -1,5 +1,5 @@
 rm /etc/hostname
-echo "aio-openstack" | tee /etc/hostname
+echo "aio-havana" | tee /etc/hostname
 
 rm /etc/hosts
 echo "127.0.0.1 localhost
@@ -27,8 +27,8 @@ iface eth1 inet manual
 " | tee /etc/network/interfaces
 
 echo "
-export ${INTERNAL_IP}
-export ${INTERNAL_GW}
+export INTERNAL_IP=${INTERNAL_IP}
+export INTERNAL_GW=${INTERNAL_GW}
 " >> /root/.bashrc
 
 shutdown -h now
