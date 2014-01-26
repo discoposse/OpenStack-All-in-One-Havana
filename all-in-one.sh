@@ -269,4 +269,63 @@ glance-manage db_sync
 wget http://download.cirros-cloud.net/0.3.1/cirros-0.3.1-x86_64-disk.img
 glance image-create --is-public true --disk-format qcow2 --container-format bare --name "Cirros 0.3.1" < cirros-0.3.1-x86_64-disk.img
 
+#################### Nova Install ####################
 
+apt-get install -y nova-novncproxy novnc nova-api nova-ajax-console-proxy nova-cert nova-conductor nova-consoleauth nova-doc nova-scheduler python-novaclient
+
+mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "CREATE DATABASE nova;"
+mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON nova.* TO 'nova'@'localhost' IDENTIFIED BY '$MYSQL_PASS';"
+mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON nova.* TO 'nova'@'%' IDENTIFIED BY '$MYSQL_PASS';"
+
+sudo sed -i 's#^connection.*#connection = mysql://nova:openstack@127.0.0.1/nova#' /etc/nova/nova.conf
+sudo sed -i 's#^auth_host.*#auth_host = controller#' /etc/nova/api-paste.ini
+sudo sed -i 's#^admin_tenant_name.*#admin_tenant_name = service#' /etc/nova/api-paste.ini
+sudo sed -i 's#^admin_user.*#admin_user = nova#' /etc/nova/api-paste.ini
+sudo sed -i 's#^admin_password.*#admin_password = nova#' /etc/nova/api-paste.ini
+
+nova-manage db sync
+
+echo "
+my_ip=${INTERNAL_IP}
+vncserver_listen=${INTERNAL_IP}
+vncserver_proxyclient_address=${INTERNAL_IP}
+auth_strategy=keystone
+rpc_backend = nova.rpc.impl_kombu
+rabbit_host = controller" >> /etc/nova/nova.conf
+
+service nova-api restart
+service nova-cert restart
+service nova-consoleauth restart
+service nova-scheduler restart
+service nova-conductor restart
+service nova-novncproxy restart
+
+#################### Horizon Install ####################
+
+apt-get install -y memcached libapache2-mod-wsgi openstack-dashboard
+apt-get remove -y --purge openstack-dashboard-ubuntu-theme
+
+sudo sed -i "s/^\-l 127.0.0.1.*/-l ${INTERNAL_IP}/g" /etc/memcached.conf
+sudo sed -i "s/^OPENSTACK_HOST.*/OPENSTACK_HOST = \"controller\"/g" /etc/openstack-dashboard/local_settings.py
+sudo sed -i "s/127.0.0.1/${INTERNAL_IP}/g" /etc/openstack-dashboard/local_settings.py
+
+mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "CREATE DATABASE dash;"
+mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON dash.* TO 'dash'@'localhost' IDENTIFIED BY '$MYSQL_PASS';"
+mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON dash.* TO 'dash'@'%' IDENTIFIED BY '$MYSQL_PASS';"
+
+# echo "
+# SESSION_ENGINE = 'django.core.cache.backends.db.DatabaseCache'
+# DATABASE = {
+# 	'default': { 
+#	# Database configuration here
+#	'ENGINE': 'django.db.backends.mysql',
+#	'NAME': 'dash',
+#	'USER': 'dash',
+#	'PASSWORD': 'openstack',
+#	'HOST': 'localhost',
+#	'default-character-set': 'utf8'
+#	}
+# }
+# " >> /etc/openstack-dashboard/local_settings.py
+
+. /etc/init.d/apache2 reload
