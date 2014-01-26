@@ -68,7 +68,7 @@ export OS_TENANT_NAME=admin
 export OS_USERNAME=admin
 export OS_PASSWORD=openstack
 
-# Create our roles, tenants and users
+#################### Create our roles, tenants and users #################### 
 
 # admin role
 keystone role-create --name admin
@@ -117,7 +117,7 @@ keystone service-create --name glance --type image --description 'OpenStack Imag
 keystone service-create --name keystone --type identity --description 'OpenStack Identity Service'
 
 # Cinder Block Storage Endpoint
-keystone service-create --name volume --type volume --description 'Volume Service'
+## keystone service-create --name volume --type volume --description 'Volume Service'
 
 # OpenStack Compute Nova API
 NOVA_SERVICE_ID=$(keystone service-list | awk '/\ nova\ / {print $2}')
@@ -162,7 +162,7 @@ PUBLIC="http://$ENDPOINT:8776/v1/%(tenant_id)s"
 ADMIN=$PUBLIC
 INTERNAL=$PUBLIC
 
-keystone endpoint-create --region RegionOne --service_id $CINDER_SERVICE_ID --publicurl $PUBLIC --adminurl $ADMIN --internalurl $INTERNAL
+### keystone endpoint-create --region RegionOne --service_id $CINDER_SERVICE_ID --publicurl $PUBLIC --adminurl $ADMIN --internalurl $INTERNAL
 
 # Service Tenant
 keystone tenant-create --name service --description "Service Tenant" --enabled true
@@ -175,7 +175,7 @@ keystone user-create --name glance --pass glance --tenant_id $SERVICE_TENANT_ID 
 
 keystone user-create --name keystone --pass keystone --tenant_id $SERVICE_TENANT_ID --email keystone@localhost --enabled true
 
-keystone user-create --name cinder --pass cinder --tenant_id $SERVICE_TENANT_ID --email cinder@localhost --enabled true
+### keystone user-create --name cinder --pass cinder --tenant_id $SERVICE_TENANT_ID --email cinder@localhost --enabled true
 
 # Get the nova user id
 NOVA_USER_ID=$(keystone user-list | awk '/\ nova\ / {print $2}')
@@ -199,10 +199,10 @@ KEYSTONE_USER_ID=$(keystone user-list | awk '/\ keystone\ / {print $2}')
 keystone user-role-add --user $KEYSTONE_USER_ID --role $ADMIN_ROLE_ID --tenant_id $SERVICE_TENANT_ID
 
 # Get the cinder user id
-CINDER_USER_ID=$(keystone user-list | awk '/\ cinder \ / {print $2}')
+### CINDER_USER_ID=$(keystone user-list | awk '/\ cinder \ / {print $2}')
 
 # Assign the cinder user the admin role in service tenant
-keystone user-role-add --user $CINDER_USER_ID --role $ADMIN_ROLE_ID --tenant_id $SERVICE_TENANT_ID
+### keystone user-role-add --user $CINDER_USER_ID --role $ADMIN_ROLE_ID --tenant_id $SERVICE_TENANT_ID
 
 echo "export CONTROLLER_HOST=${INTERNAL_IP}
 export KEYSTONE_ENDPOINT=${INTERNAL_IP}
