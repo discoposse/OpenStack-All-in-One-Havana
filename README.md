@@ -21,3 +21,8 @@ The All-in-One node includes:
 
 Additianal scripts will be added for deploying further components.
 
+Blog posts illustrating how to launch this using VMware Workstation are here: 
+
+Getting Started: http://www.discoposse.com/index.php/2014/01/26/openstack-havana-all-in-one-lab-on-vmware-workstation/ 
+Launching your first Nova instance: (coming soon)
+
