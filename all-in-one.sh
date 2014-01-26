@@ -351,8 +351,8 @@ mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON dash.* TO 'dash'@'
 # }
 # " >> /etc/openstack-dashboard/local_settings.py
 
-. /etc/init.d/apache2 reload
+sudo . /etc/init.d/apache2 reload
 
 #### ALL DONE ####
-reboot
+sudo reboot
 
