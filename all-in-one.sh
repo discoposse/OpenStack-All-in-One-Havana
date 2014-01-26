@@ -18,7 +18,7 @@ sudo apt-get install python-software-properties -y
 sudo apt-get update && apt-get upgrade -y
 
 # Install NTP while we are here
-echo "ntpdate controller
+echo "ntpdate aio-havana
 hwclock -w" | sudo tee /etc/cron.daily/ntpdate
 chmod a+x /etc/cron.daily/ntpdate
 
@@ -232,13 +232,13 @@ mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON glance.* TO 'glanc
 mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON glance.* TO 'glance'@'%' IDENTIFIED BY '$MYSQL_PASS';"
 
 sudo sed -i 's#^sql_connection.*#sql_connection = mysql://glance:openstack@127.0.0.1/glance#' /etc/glance/glance-registry.conf
-sudo sed -i 's#^auth_host.*#auth_host = controller#' /etc/glance/glance-registry.conf
+sudo sed -i 's#^auth_host.*#auth_host = aio-havana#' /etc/glance/glance-registry.conf
 sudo sed -i 's#^admin_tenant_name.*#admin_tenant_name = service#' /etc/glance/glance-registry.conf
 sudo sed -i 's#^admin_user.*#admin_user = glance#' /etc/glance/glance-registry.conf
 sudo sed -i 's#^admin_password.*#admin_password = glance#' /etc/glance/glance-registry.conf
 
 sudo sed -i 's#^sql_connection.*#sql_connection = mysql://glance:openstack@127.0.0.1/glance#' /etc/glance/glance-api.conf
-sudo sed -i 's#^auth_host.*#auth_host = controller#' /etc/glance/glance-api.conf
+sudo sed -i 's#^auth_host.*#auth_host = aio-havana#' /etc/glance/glance-api.conf
 sudo sed -i 's#^admin_tenant_name.*#admin_tenant_name = service#' /etc/glance/glance-api.conf
 sudo sed -i 's#^admin_user.*#admin_user = glance#' /etc/glance/glance-api.conf
 sudo sed -i 's#^admin_password.*#admin_password = glance#' /etc/glance/glance-api.conf
@@ -247,7 +247,7 @@ sudo sed -i '/^\[filter:authtoken\]/d' /etc/glance/glance-api-paste.ini
 sudo sed -i '/^delay_auth_decision.*/d' /etc/glance/glance-api-paste.ini
 sudo sed -i '/^paste.filter_factory = keystoneclient.middleware.auth_token.*/d' /etc/glance/glance-api-paste.ini
 
-echo "auth_host = controller
+echo "auth_host = aio-havana
 admin_user = glance
 admin_tenant_name = service
 admin_password = glance
@@ -256,7 +256,7 @@ admin_password = glance
 echo "
 [filter:authtoken]
 paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory
-auth_host = controller
+auth_host = aio-havana
 admin_user = glance
 admin_tenant_name = service
 admin_password = glance
@@ -272,13 +272,19 @@ glance image-create --is-public true --disk-format qcow2 --container-format bare
 #################### Nova Install ####################
 
 apt-get install -y nova-novncproxy novnc nova-api nova-ajax-console-proxy nova-cert nova-conductor nova-consoleauth nova-doc nova-scheduler python-novaclient
+sudo apt-get install -y nova-compute-kvm python-novaclient python-guestfs python-keystoneclient
+sudo update-guestfs-appliance
+sudo apt-get install -y nova-network
+
+sudo chmod 0644 /boot/vmlinuz*
+
+sudo rm /var/lib/nova/nova.sqlite
 
 mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "CREATE DATABASE nova;"
 mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON nova.* TO 'nova'@'localhost' IDENTIFIED BY '$MYSQL_PASS';"
 mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON nova.* TO 'nova'@'%' IDENTIFIED BY '$MYSQL_PASS';"
 
-sudo sed -i 's#^connection.*#connection = mysql://nova:openstack@127.0.0.1/nova#' /etc/nova/nova.conf
-sudo sed -i 's#^auth_host.*#auth_host = controller#' /etc/nova/api-paste.ini
+sudo sed -i 's#^auth_host.*#auth_host = aio-havana#' /etc/nova/api-paste.ini
 sudo sed -i 's#^admin_tenant_name.*#admin_tenant_name = service#' /etc/nova/api-paste.ini
 sudo sed -i 's#^admin_user.*#admin_user = nova#' /etc/nova/api-paste.ini
 sudo sed -i 's#^admin_password.*#admin_password = nova#' /etc/nova/api-paste.ini
@@ -290,8 +296,25 @@ my_ip=${INTERNAL_IP}
 vncserver_listen=${INTERNAL_IP}
 vncserver_proxyclient_address=${INTERNAL_IP}
 auth_strategy=keystone
-rpc_backend = nova.rpc.impl_kombu
-rabbit_host = controller" >> /etc/nova/nova.conf
+rpc_backend=nova.rpc.impl_kombu
+rabbit_host=aio-havana
+glance_host=controller
+network_manager=nova.network.manager.FlatDHCPManager
+firewall_driver=nova.virt.libvirt.firewall.IptablesFirewallDriver
+network_size=254
+allow_same_net_traffic=False
+multi_host=True
+send_arp_for_ha=True
+share_dhcp_address=True
+force_dhcp_release=True
+flat_network_bridge=br100
+flat_interface=eth1
+public_interface=eth0
+
+[database]
+mysql://nova:openstack@127.0.0.1/nova
+
+" >> /etc/nova/nova.conf
 
 service nova-api restart
 service nova-cert restart
@@ -306,7 +329,7 @@ apt-get install -y memcached libapache2-mod-wsgi openstack-dashboard
 apt-get remove -y --purge openstack-dashboard-ubuntu-theme
 
 sudo sed -i "s/^\-l 127.0.0.1.*/-l ${INTERNAL_IP}/g" /etc/memcached.conf
-sudo sed -i "s/^OPENSTACK_HOST.*/OPENSTACK_HOST = \"controller\"/g" /etc/openstack-dashboard/local_settings.py
+sudo sed -i "s/^OPENSTACK_HOST.*/OPENSTACK_HOST = \"aio-havana\"/g" /etc/openstack-dashboard/local_settings.py
 sudo sed -i "s/127.0.0.1/${INTERNAL_IP}/g" /etc/openstack-dashboard/local_settings.py
 
 mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "CREATE DATABASE dash;"
