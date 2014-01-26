@@ -298,7 +298,7 @@ vncserver_proxyclient_address=${INTERNAL_IP}
 auth_strategy=keystone
 rpc_backend=nova.rpc.impl_kombu
 rabbit_host=aio-havana
-glance_host=controller
+glance_host=aio-havana
 network_manager=nova.network.manager.FlatDHCPManager
 firewall_driver=nova.virt.libvirt.firewall.IptablesFirewallDriver
 network_size=254
@@ -352,3 +352,7 @@ mysql -h localhost -uroot -p$MYSQL_ROOT_PASS -e "GRANT ALL ON dash.* TO 'dash'@'
 # " >> /etc/openstack-dashboard/local_settings.py
 
 . /etc/init.d/apache2 reload
+
+#### ALL DONE ####
+reboot
+
