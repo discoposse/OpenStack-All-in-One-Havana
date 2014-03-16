@@ -310,6 +310,7 @@ force_dhcp_release=True
 flat_network_bridge=br100
 flat_interface=eth1
 public_interface=eth0
+novncproxy_base_url=http://${INTERNAL_IP}:6080/vnc_auto.html
 
 [database]
 mysql://nova:openstack@127.0.0.1/nova
