@@ -59,6 +59,15 @@ INTERNAL=$PUBLIC
 keystone service-create --name volume --type volumev2 --description 'Volume Service V2'
 
 CINDER_SERVICE_ID=$(keystone service-list | awk '/\ volumev2\ / {print $2}')
+
+keystone endpoint-create --region RegionOne --service_id $CINDER_SERVICE_ID --publicurl $PUBLIC --adminurl $ADMIN --internalurl $INTERNAL
+
+echo "
+rpc_backend = cinder.openstack.common.rpc.impl_kombu
+rabbit_host = aio-havana
+rabbit_port = 5672
+" | sudo tee /etc/cinder/cinder.conf
+
 sudo sed -i 's#filter*#filter = [ "a/sdb/" ]#' /etc/lvm/lvm.conf
 
 sudo service cinder-volume restart
