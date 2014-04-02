@@ -39,7 +39,7 @@ sudo sed -i 's#^admin_user.*#admin_user = cinder#' /etc/cinder/api-paste.ini
 sudo sed -i 's#^admin_password.*#admin_password = cinder#' /etc/cinder/api-paste.ini
 
 # Cinder Block Storage Endpoint
-keystone service-create --name volume --type volume --description 'Volume Service'
+keystone service-create --name=cinder --type=volume --description="Cinder Volume Service"
 
 # Get the cinder user id
 CINDER_USER_ID=$(keystone user-list | awk '/\ cinder \ / {print $2}')
@@ -56,7 +56,7 @@ ADMIN=$PUBLIC
 INTERNAL=$PUBLIC
 
 # Cinder Block Storage Endpoint V2
-keystone service-create --name volume --type volumev2 --description 'Volume Service V2'
+keystone service-create --name=cinder --type=volumev2 --description="Cinder Volume Service V2"
 
 CINDER_SERVICE_ID=$(keystone service-list | awk '/\ volumev2\ / {print $2}')
 
@@ -71,7 +71,7 @@ echo "
 rpc_backend = cinder.openstack.common.rpc.impl_kombu
 rabbit_host = aio-havana
 rabbit_port = 5672
-" | sudo tee /etc/cinder/cinder.conf
+" >> /etc/cinder/cinder.conf
 
 sudo sed -i 's#filter.*#filter = [ "a/sdb/" ]#' /etc/lvm/lvm.conf
 
