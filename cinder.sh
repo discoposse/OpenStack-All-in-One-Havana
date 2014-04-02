@@ -65,6 +65,8 @@ keystone endpoint-create --region RegionOne --service_id $CINDER_SERVICE_ID --pu
 service cinder-scheduler restart
 service cinder-api restart
 
+sudo apt-get install -y cinder-volume
+
 echo "
 rpc_backend = cinder.openstack.common.rpc.impl_kombu
 rabbit_host = aio-havana
@@ -73,5 +75,11 @@ rabbit_port = 5672
 
 sudo sed -i 's#filter.*#filter = [ "a/sdb/" ]#' /etc/lvm/lvm.conf
 
+pvcreate /dev/sdb
+vgcreate cinder-volumes /dev/sdb
+
 sudo service cinder-volume restart
 sudo service tgt restart
+sudo service cinder-api restart
+sudo service cinder-scheduler restart
+
